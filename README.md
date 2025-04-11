@@ -218,8 +218,3 @@ pip install -r requirements.txt
 - May produce lower scores for new/breaking news with limited coverage  
 - Relies on third-party APIs which may change or become unavailable  
 - Speed depends on network connectivity and API response time  
-```
-
----
-
-Let me know if you'd like this saved as a file or need a markdown preview!
