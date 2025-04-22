@@ -6,7 +6,7 @@ extracting their content, and preprocessing the text.
 
 Key features:
 - Flask-based web service for article scraping
-- HTML parsing using newspaper3k
+- HTML parsing using Newspaper3k library
 - Content extraction focusing on relevant article elements
 - Text preprocessing to clean and normalize article content
 - Error handling for robust operation
@@ -19,34 +19,36 @@ and returns the extracted article content as JSON.
 from flask import Flask, request, jsonify  # Web framework and request/response handling
 from extractor import preprocess_text  # Local text preprocessing function
 from newspaper import Article  # Newspaper3k for article extraction
+import requests  # HTTP library for making requests
 
 # Create Flask app object without running it automatically
 app = Flask(__name__)  # Initialize Flask application
 
 def scrape_article(url):
-    """
-    Scrape and extract content from a given URL using newspaper3k.
-    
-    Fetches the article using newspaper3k, extracts title and text,
-    and applies preprocessing.
-    
-    Args:
-        url (str): URL of the article to scrape
-        
-    Returns:
-        dict: Dictionary containing head and body text, or error message
-              - 'head': String with title and metadata text
-              - 'body': String with main article content
-              - 'error': Error message if scraping fails
-    """
     try:
+        # Manually set headers and use requests to fetch the page content
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            )
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()  # Raises exception for 403/404/etc.
+
+        # Pass the HTML manually to newspaper3k
         article = Article(url)
-        article.download()
+        article.set_html(response.text)
         article.parse()
+
         # Preprocess title and main text
+        from extractor import preprocess_text
         head_text = preprocess_text(article.title)
         body_text = preprocess_text(article.text)
+
         return {"head": head_text, "body": body_text}
+
     except Exception as e:
         return {"error": f"Something went wrong: {e}"}
 
